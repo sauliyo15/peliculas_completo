@@ -20,17 +20,21 @@ let mis_peliculas_iniciales = [
   },
 ];
 
+//Variable auxiliar para almacenar las peliculas
 let mis_peliculas = [];
 
 //Esta es la apikey de la cuenta de https://app.jsonstorage.net/items
 let apiKey = "5e20568c-79de-4a1f-81ad-7c8ebdf68ab8";
 
+
 // PRIMITIVAS DE AJAX
 // ------------------
 
-// METODO
+// METODO QUE CREA POR PRIMERA VEZ EL RECURSO EN EL SERVIDOR DE JSONSTORAGE
 const postAPI = async (peliculas) => {
   try {
+    /*Instrucciones en la plataforma: a través de la plataforma y la apikay 
+    creamos (POST) el recurso en el servidor con los datos de las peliculas*/
     const res = await fetch(
       `https://api.jsonstorage.net/v1/json?apiKey=${apiKey}`,
       {
@@ -48,14 +52,16 @@ const postAPI = async (peliculas) => {
   }
 };
 
-// METODO
+// METODO QUE OBTIENE (GET) DEL SERVIDOR EL RECURSO (URL) ALMACENADO EN LOCALSTORAGE
 const getAPI = async () => {
   let response = await fetch(localStorage.URL);
   return await response.json();
 };
 
-// METODO
+// METODO QUE ACTUALIZA (PUT) DATOS EN EL SERVIDOR CON LOS PARAMETROS DESEADOS
 const updateAPI = async (peliculas) => {
+  
+  //Instrucciones en la plataforma: en este caso se a de crear así la url para la peticion
   let cadena = localStorage.URL + "?apiKey=" + apiKey;
 
   try {
@@ -121,7 +127,8 @@ const showView = (pelicula) => {
 
 // METODO QUE REPRESENTA VISUALMENTE UNA PELICULA PARA SU EDICION
 const editView = (i, pelicula) => {
-  //Se crea la estructura html con los datos de la pelicula y en el boton Actualizar la posicion (i) que ocupa en el array
+  /*Se crea la estructura html con los datos de la pelicula y en el boton Actualizar la posicion (i) 
+  que ocupa en el array*/
   return `<h2>Editar Película </h2>
                 <div class="field">
                 Título <br>
@@ -174,46 +181,41 @@ const newView = () => {
 // CONTROLADORES
 // -------------
 
-// METODO
+// METODO QUE INICIA LA APLICACION COMPROBANDO SI ES LA PRIMERA VEZ QUE SE USA
 const initContr = async () => {
-
-  //localStorage.URL = "https://api.jsonstorage.net/v1/json/8c444b18-41c6-463e-9724-af82bd9eee7b/d281a42f-42a2-4b26-b36d-e3364e093bcb";
-
-  if (!localStorage.URL || localStorage.URL === "undefined") {
-      localStorage.URL = await postAPI(mis_peliculas_iniciales);
-  }
   
+  //Se comprueba si ha direccion url con el recurso en localstorage, en caso contrario se crea el recurso y se guarda
+  if (!localStorage.URL || localStorage.URL === "undefined") {
+    localStorage.URL = await postAPI(mis_peliculas_iniciales);
+  }
   indexContr();
-}
+};
 
-// METODO QUE PARSEA LAS PELICULAS Y ASIGNA AL ELEMENTO EL RESULTADO DE LLAMADA A LA VISTA
+// METODO OBTIENE LAS PELICULAS Y ASIGNA AL ELEMENTO EL RESULTADO DE LLAMADA A LA VISTA
 const indexContr = async () => {
 
-  mis_peliculas = await getAPI() || [];
+  //Peticion para obtener las peliculas del servidor
+  mis_peliculas = (await getAPI()) || [];
 
   //Obtenemos la referencia al elemento html y le asignamos el resultado retornado por la funcion de la vista
   document.getElementById("main").innerHTML = indexView(mis_peliculas);
 };
 
-// METODO QUE RECIBE UN INDICE, PARSEA LAS PELICULAS Y ASIGNA EL ELEMENTO DE LLAMADA A LA VISTA
+// METODO QUE RECIBE UN INDICE Y REALIZA LA LLAMADA A LA VISTA
 const showContr = (i) => {
-
-  //Obtenemos la referencia al elemento html y le asignamos el resultado retornado por la funcion de la vista (accediendo al array mediante el indice)
+  /*Obtenemos la referencia al elemento html y le asignamos el resultado retornado por la funcion de la vista
+   (accediendo al array mediante el indice)*/
   document.getElementById("main").innerHTML = showView(mis_peliculas[i]);
 };
 
-// METODO QUE RECIBE UN INDICE, PASEA LAS PELIULAS Y GUARDA UNA PELICULA Y ASIGANA AL ELEMENTO LA LLAMADA A LA VISTA
+// METODO QUE RECIBE UN INDICE, Y ASIGAN AL ELEMENTO LA LLAMADA A LA VISTA
 const editContr = (i) => {
-  //Cogemos la cadena json de localstorage y la parseamos a un objeto JS (en este caso array) y se guarda el objeto correspondiente al indie
-  let pelicula = JSON.parse(localStorage.mis_peliculas)[i];
-
   //Obtenemos la referencia al elemento html y le asignamos el resultado retornado por la funcion dela vista.
-  document.getElementById("main").innerHTML = editView(i, pelicula);
+  document.getElementById("main").innerHTML = editView(i, mis_peliculas[i]);
 };
 
 // METODO QUE RECIBE UN INDICE, ACCEDE A LAS CAJAS DE TEXTO Y ACTUALIZA LOS DATOS DE LA PELICULA
 const updateContr = async (i) => {
-  
   //Accediendo a las propiedades del objeto y asignamos/actualizamos el contenido de las cajas de texto
   mis_peliculas[i].titulo = document.getElementById("titulo").value;
   mis_peliculas[i].director = document.getElementById("director").value;
@@ -228,11 +230,11 @@ const updateContr = async (i) => {
 // METODO QUE RECIBE UN INDICE PARA ELIMINAR EL OBJETO QUE OCUPA ESA POSICION DEL ARRAY
 const deleteContr = async (i) => {
   var opcion = confirm("¿Deseas eliminar la película");
-            if (opcion == true) {
-                mis_peliculas.splice(i, 1);
-                await updateAPI(mis_peliculas);
-                indexContr();
-	        }
+  if (opcion == true) {
+    mis_peliculas.splice(i, 1);
+    await updateAPI(mis_peliculas);
+    indexContr();
+  }
 };
 
 // METODO QUE ASIGNA AL ELEMENTO EL RESULTADO DE LA LLAMADA A LA VISTA
@@ -242,7 +244,6 @@ const newContr = () => {
 
 // METODO QUE AÑADE UNA PELICULA AL MODELO DE DATOS
 const createContr = async () => {
-
   //Creamos un objeto con los valores obtenidos de las cajas de texto
   let mi_pelicula = {
     titulo: document.getElementById("titulo").value,
@@ -250,11 +251,10 @@ const createContr = async () => {
     miniatura: document.getElementById("miniatura").value,
   };
 
-
   //Añadimos el objeto al array
   mis_peliculas.push(mi_pelicula);
 
-  await updateAPI(mis_peliculas); 
+  await updateAPI(mis_peliculas);
 
   //Llamamos al controlador que visualiza las peliculas
   indexContr();
@@ -263,8 +263,8 @@ const createContr = async () => {
 // METODO QUE RESETEA/INICIALIZA LAS PELICULAS CON LOS DATOS INICIALES
 const resetContr = async () => {
   mis_peliculas = mis_peliculas_iniciales;
-            await updateAPI(mis_peliculas);
-            indexContr();
+  await updateAPI(mis_peliculas);
+  indexContr();
 };
 
 // INICIALIZACION DE LA PAGINA Y CAPTURA DE SU EVENTO Y LLAMADA A CONTROLADOR
@@ -286,5 +286,5 @@ document.addEventListener("click", (ev) => {
   else if (matchEvent(ev, ".reset")) resetContr();
 });
 
-// Inicialización        
-document.addEventListener('DOMContentLoaded', initContr);
+// Inicialización
+document.addEventListener("DOMContentLoaded", initContr);
