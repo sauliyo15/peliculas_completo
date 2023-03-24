@@ -31,6 +31,8 @@
     <h1>Mis Películas Favoritas</h1>
     <div id="main"><!-- La vista se incluye aquí --></div>
 
+    <button id="buttonInstall" aria-label="Instalar" hidden>Instalar aplicación</button>
+
     <script>
       if('serviceWorker' in navigator) {
         window.addEventListener("load", ()=> {
@@ -40,5 +42,7 @@
         })
       }
     </script>
+
+    <script src="files/install.js"></script>
   </body>
 </html>
